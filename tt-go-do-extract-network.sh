@@ -1,4 +1,7 @@
 #!/bin/bash
+echo this isn't reliable, use the -dl version
+exit
+
 # more infos youtube/macintoshkeyboardhacking
 
 # tablo's IP - I've only tested on my hdmi4

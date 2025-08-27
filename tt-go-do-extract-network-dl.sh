@@ -1,5 +1,13 @@
 #!/bin/bash
-# more infos youtube "MacintoshKeyboardHacking release"
+# more infos youtube/macintoshkeyboardhacking
+
+PATH=/mnt/a/tabTools:$PATH
+
+OUTDIR=/mnt/a/tv/tsout/
+
+
+echo GO TO THE FOLDER FIRST!!!!
+cd $OUTDIR
 
 # tablo's IP - I've only tested on my hdmi4
 TIP=198.19.4.60
@@ -20,6 +28,8 @@ TBU=http://$TIP:18080/pvr/
 TMPF=$TMPD/tmpremux-`date +%s`.mp4
 rm -f $TMPF
 
+#sqlite> select recordingid from recording where id=669746;
+
 # you need to mount their ext4 and ln -s .. ... in the root
 curl -sS --url $TBU/.../mnt/storage/Tablo.db -o $DBF
 
@@ -28,13 +38,22 @@ for recID in `curl -sS --url $TBU/rec/|grep ^\<tr|cut -d\" -f6|grep ^[0-9]*\/ |s
 	if $(curl -sS -fL $TBU/rec/$recID/snap_done &>/dev/null); then
 		TT=(`tt-metaproc.py $recID`)
 
-		FOLDER=`echo ${TT[0]} |sed -e "s/\(.*\)\/.*/\1/"`
-		mkdir -p $FOLDER/
-
 		FILE=${TT[0]}.mpg
 		echo -n "$FILE: "
 
-		if [ ! -f $FILE ]; then
+		FOLDER=`echo ${TT[0]} |sed -e "s/\(.*\)\/.*/\1/"`
+		mkdir -p $FOLDER/ &>/dev/null
+
+		if [ ! -d $FOLDER/ ]; then	# a 'skip file' is blocking the folder creation
+			echo "#skip"
+		else
+
+		FALT=../tscollect/$FILE
+		FAL1=`echo $FILE|sed -e "s/mpg$/mp4/"`
+		FAL2=`echo $FALT|sed -e "s/mpg$/mp4/"`
+		if [ ! -f $FILE ] && [ ! -f $FALT ] && [ ! -f $FAL1 ] && [ ! -f $FAL2 ]; then	# check for alternates
+#		if [ ! -f $FILE ]; then
+#			rm $FALT $FAL1 $FAL2
 		curl -sS -L --url http://$TIP:8887/images/${TT[1]} > $FOLDER/folder.jpg
 
 		# windows folder icon
@@ -54,7 +73,6 @@ chmod 555 $FOLDER/
 
 
 	if [ $MODE == "ST" ]; then
-		# had problems with Tablo server truncating connection with this
 		urList=" -protocol_whitelist concat,http,tcp -i concat:"
 		for b in `curl -sS --url $TBU/rec/$recID/segs/|grep MP2T|cut -d\" -f4|sort -n`; do
 			urList+="$TBU/rec/$recID/segs/$b|"
@@ -70,7 +88,7 @@ chmod 555 $FOLDER/
 			-map 0:v -map 0:a:0 -map 0:s? -c copy -strict -2 -movflags +use_metadata_tags -f mp4 $TMPF
 				      #	&& \
 	elif [ $MODE == "DL" ]; then
-		echo "download from $TBU/rec/$recID/segs/"
+		echo;echo "download from $TBU/rec/$recID/segs/"
 		rm $TMPD/playlist.pl
 		rm $TMPD/00*.ts
 		for b in `curl -sS --url $TBU/rec/$recID/segs/|grep MP2T|cut -d\" -f4|sort -n`; do
@@ -97,9 +115,11 @@ chmod 555 $FOLDER/
 			MP4Box -tmp $TMPD -isma -inter 250 -add $TMPF -new $FILE ) && \
 
 		rm $TMPF
+		sleep 1
+
 		fi
 
 		echo "#done"
-		sleep 1
+	fi
 	fi
 done
