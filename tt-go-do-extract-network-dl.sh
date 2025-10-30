@@ -1,6 +1,11 @@
 #!/bin/bash
 # more infos youtube/macintoshkeyboardhacking
 
+LOCKFILE=/tmp/tabTool.lock
+
+if [ -f $LOCKFILE ]; then exit 1; fi
+touch $LOCKFILE
+
 PATH=/mnt/a/tabTools:$PATH
 
 OUTDIR=/mnt/a/tv/tsout/
@@ -123,3 +128,5 @@ chmod 555 $FOLDER/
 	fi
 	fi
 done
+
+rm $LOCKFILE
