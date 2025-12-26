@@ -50,6 +50,10 @@ mv -n $LOC/*/*.mp? $LOC/
 
 
 # hide zero-length files for samba
-find $LOC -type f -size 0 -name "*.mp?"|xargs chmod o+x
+find $LOC -type f -size 0 -name "*.mp?" -print0|xargs -0 -n1 chmod o=x
+
+# chmod o= would probably be a better choice
+find $LOC -type d -print0|xargs -0 -n1 rmdir
+
 
 exit

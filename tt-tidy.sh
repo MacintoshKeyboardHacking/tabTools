@@ -49,4 +49,4 @@ find /mnt/a/tv/tscollect -mindepth 2 -maxdepth 2 -type f -name "*@*.mpg" ! -size
 ###
 
 # hide the 0 length files from Samba clients
-find /mnt/a/tv/tscollect -type f -name "*.mp?" -size 0 | awk {'print "chmod o-x "$0'}
+find /mnt/a/tv/tscollect -type f -name "*.mp?" -size 0 | awk {'print "chmod o=x "$0'}
